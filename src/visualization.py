@@ -6,7 +6,7 @@ def plot_results(results,model):
     plt.plot(results["NonToM"], label="Non-ToM Agents")
     plt.xlabel("Steps")
     plt.ylabel("Average Resources")
-    plt.title("Resource Accumulation Over Time with {model} Model")
+    plt.title(f"Resource Accumulation Over Time with {model} Model")
     plt.legend()
     plt.show()
 

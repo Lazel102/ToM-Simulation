@@ -49,3 +49,13 @@ We calculated:
 3. The environment alternates predictably between two states.
 
 This simple model serves as a baseline for evaluating the adaptive benefits of ToM under environmental variability and provides a foundation for introducing more complex dynamics in subsequent iterations.
+
+# Next Layer : Limited ressources and adaption of ToM behavior based on the ressources
+
+### **Changes from the Minimal Model**
+
+1. **Shared Resource Pool:**
+   - Introduced a **limited, shared resource pool** that agents compete for, with availability alternating between high (\( R_{\text{total}} = 100 \)) and low (\( R_{\text{total}} = 50 \)) states.
+
+2. **Adaptive ToM Behavior:**
+   - ToM agents now **request fewer resources in low-resource environments** (40% of the pool) and more in high-resource environments (60% of the pool), reflecting strategic adaptation to environmental conditions.
