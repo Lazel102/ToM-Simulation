@@ -8,8 +8,8 @@ The model consists of two types of agents:
 
 ### Environment
 The environment alternates predictably between two states:
-- ** E_{ high }**: High resource availability.
-- ** E_{ low }**: Low resource availability.
+- ** $$ E_{ high } $$**: High resource availability.
+- ** $$ E_{ low } $$**: Low resource availability.
 
 ### Resource Acquisition
 At each time step, agents accumulate resources:
@@ -18,7 +18,7 @@ At each time step, agents accumulate resources:
 
 ### Simulation Dynamics
 1. Initialize  N  agents as ToM ( T = 1 ) or non-ToM ( T = 0 ).
-2. Alternate environment states ( $E_{ high$ }  and  $E_{ low }$) at each time step.
+2. Alternate environment states ( $$E_{ high$$ }  and  $$E_{ low }$$) at each time step.
 3. Track resource accumulation for  T  steps.
 
 ### Data Analysis
