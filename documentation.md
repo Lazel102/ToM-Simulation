@@ -8,7 +8,7 @@ The model consists of two types of agents:
 
 ### Environment
 The environment alternates predictably between two states:
-- ** $$ E_{ high } $$**: High resource availability.
+- ** $E_{ high }$**: High resource availability.
 - ** $$ E_{ low } $$**: Low resource availability.
 
 ### Resource Acquisition
