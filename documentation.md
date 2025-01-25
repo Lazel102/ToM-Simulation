@@ -13,7 +13,7 @@ The environment alternates predictably between two states:
 
 ### Resource Acquisition
 At each time step, agents accumulate resources:
-1. **ToM Agents:** Gain resources based on adaptive strategies for high ( b_{ high }) and low ( b_{ low }) resource states.
+1. **ToM Agents:** Gain resources based on adaptive strategies for high ($ b_{ high } $) and low ($$ b_{ low } $$) resource states.
 2. **Non-ToM Agents:** Gain a fixed amount ( k ) regardless of environmental state.
 
 ### Simulation Dynamics
