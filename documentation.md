@@ -39,7 +39,7 @@ At each time step, agents accumulate resources:
 2. **Adaptive ToM Behavior:**
    - ToM agents **request fewer resources in low-resource environments** (40% of the pool) and more in high-resource environments (60% of the pool), reflecting strategic adaptation.
 
-# Current Layer: Group-Specific Cooperation (ToM)
+# Layer: Group-Specific Cooperation (ToM)
 
 ### Changes from the Previous Layer
 1. **Group Separation:**
@@ -57,3 +57,20 @@ At each time step, agents accumulate resources:
      - One cooperates and the other defects: The defector gets 4 resources, while the cooperator gets 0.
 
 This layer emphasizes the role of within-group dynamics in understanding how ToM can provide adaptive advantages, isolating the impact of cooperation strategies from inter-group competition.
+
+# Layer: Enhanced (ToM) - logic with (ToM) parameter $\alpha$
+### Changes from the Previous Layer
+
+1. **Enhanced ToM Decision Logic:**
+   - ToM agents now predict cooperation based on both **self-prediction** and **partner prediction**, weighted by an individual $\alpha $ parameter.
+
+2. **$\alpha$-Weighted Predictions:**
+   - $\alpha$  is unique for each ToM agent, sampled from a uniform distribution (\( [0, 1] \)).
+   - Cooperation probability is calculated as:
+     
+     $\text{Combined Probability} = \alpha \times \text{Self-Prediction} + (1 - \alpha) \times \text{Partner Prediction}.$
+
+3. **Environmental Context:**
+   - Predictions incorporate the total resource availability, reflecting environmental variability.
+
+This layer refines the ToM agents’ decision-making, highlighting the interplay between introspection, partner observation, and environmental adaptation.

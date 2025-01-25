@@ -1,80 +1,112 @@
 import random
-
+import config
 class Agent:
     def __init__(self, agent_id, has_tom):
         self.id = agent_id
         self.has_tom = has_tom
         self.resources = 0
-
-    def decide_cooperation(self, memory, partner_id):
+        self.alpha = random.uniform(0, 1) if has_tom else None  # ToM agents get a sampled alpha
+        self.cooperated = random.choice([True, False])
+    def decide_cooperation(self, memory, partner_id, resource_availability):
+        """
+        Decide whether to cooperate based on self-prediction and partner prediction probabilities.
+        """
         if not self.has_tom:
             # Non-ToM agents cooperate randomly
-            return random.choice([True, False])
+            self.cooperated = random.choice([True, False])
         else:
-            # ToM agents decide based on partner's history from centralized memory
+            # Retrieve partner's history
             partner_history = memory.get(partner_id, [])
-            if partner_history:
-                # Calculate partner's cooperation rate
-                cooperation_rate = sum(partner_history) / len(partner_history)
-                return cooperation_rate > 0.5  # Cooperate if partner cooperates > 50% of the time
-            return True  # Default to cooperation if no history exists
+            observed_cooperation_rate = sum(partner_history) / len(partner_history) if partner_history else 0
+
+            # Self-prediction: Predict the probability of self-cooperation
+            self_prediction = self.predict_cooperation(observed_cooperation_rate, resource_availability)
+
+            # Partner prediction: Predict the probability of partner cooperation
+            partner_prediction = self.predict_cooperation(observed_cooperation_rate, resource_availability)
+
+            # Combine probabilities using alpha
+            combined_probability = self.alpha * self_prediction + (1 - self.alpha) * partner_prediction
+
+            # Decide to cooperate based on combined probability
+            self.cooperated = random.random() < combined_probability
+
+        return self.cooperated
+
+    def predict_cooperation(self, observed_cooperation_rate, total_resources):
+        """
+        Predict the probability of cooperation under given conditions.
+        Combines environmental context and observed behavior.
+        Returns a probability between 0 and 1.
+        """
+        # Define baseline probability based on environmental conditions
+        baseline_probability = total_resources / (2 * config.MEAN_RESOURCES)
+
+        # Combine baseline with observed cooperation rate
+        predicted_probability = (baseline_probability + observed_cooperation_rate) / 2
+
+        return predicted_probability
+
 
 class ToMSimulation:
-    def __init__(self, num_agents, steps):
+    def __init__(self, num_agents, steps, mean_resources, variability):
         self.num_agents = num_agents
         self.steps = steps
+        self.mean_resources = mean_resources
+        self.variability = variability
         self.agents = [Agent(i, random.choice([True, False])) for i in range(num_agents)]
-        self.memory = {agent.id: [] for agent in self.agents}  # Centralized memory for cooperation history
+        self.memory = {agent.id: [] for agent in self.agents}  # Centralized memory
+        self.cooperation_log = {"ToM": [], "NonToM": []}  # Track cooperation rates separately
 
     def update_memory(self, agent_id, partner_id, action):
-        # Update the cooperation history for the pair in centralized memory
         if partner_id not in self.memory:
             self.memory[partner_id] = []
         self.memory[partner_id].append(action)
 
     def step(self):
-        # Separate agents into ToM and non-ToM groups
+        total_resources = max(0, random.gauss(self.mean_resources, self.variability))  # Resource availability
+
         tom_agents = [agent for agent in self.agents if agent.has_tom]
         nontom_agents = [agent for agent in self.agents if not agent.has_tom]
 
-        # Shuffle and create pairs within each group
         random.shuffle(tom_agents)
         random.shuffle(nontom_agents)
 
         tom_pairs = [(tom_agents[i], tom_agents[i + 1]) for i in range(0, len(tom_agents), 2) if i + 1 < len(tom_agents)]
         nontom_pairs = [(nontom_agents[i], nontom_agents[i + 1]) for i in range(0, len(nontom_agents), 2) if i + 1 < len(nontom_agents)]
 
-        # Process cooperation decisions for each group
+        total_allocation = 0
         for agent1, agent2 in tom_pairs + nontom_pairs:
-            # Each agent decides whether to cooperate
-            agent1_cooperates = agent1.decide_cooperation(self.memory, agent2.id)
-            agent2_cooperates = agent2.decide_cooperation(self.memory, agent1.id)
+            agent1_cooperates = agent1.decide_cooperation(self.memory, agent2.id, total_resources)
+            agent2_cooperates = agent2.decide_cooperation(self.memory, agent1.id, total_resources)
 
-            # Update memory
             self.update_memory(agent1.id, agent2.id, agent2_cooperates)
             self.update_memory(agent2.id, agent1.id, agent1_cooperates)
 
-            # Assign resources based on cooperation decisions
-            if agent1_cooperates and agent2_cooperates:
-                agent1.resources += 2
-                agent2.resources += 2
-            elif not agent1_cooperates and not agent2_cooperates:
-                agent1.resources += 1
-                agent2.resources += 1
-            elif agent1_cooperates and not agent2_cooperates:
-                agent1.resources += 0
-                agent2.resources += 4
-            elif not agent1_cooperates and agent2_cooperates:
-                agent1.resources += 4
-                agent2.resources += 0
+            allocation = min(2, total_resources - total_allocation) if agent1_cooperates and agent2_cooperates else \
+                min(1, total_resources - total_allocation) if not agent1_cooperates and not agent2_cooperates else \
+                min(4, total_resources - total_allocation)
+
+            agent1.resources += allocation
+            agent2.resources += allocation
+            total_allocation += allocation * 2
+
+            if total_allocation >= total_resources:
+                break
+
+        # Log cooperation rates for this step
+        tom_cooperation = [agent.cooperated for agent in tom_agents]
+        nontom_cooperation = [agent.cooperated for agent in nontom_agents]
+
+        self.cooperation_log["ToM"].append(sum(tom_cooperation) / len(tom_cooperation) if tom_cooperation else 0)
+        self.cooperation_log["NonToM"].append(sum(nontom_cooperation) / len(nontom_cooperation) if nontom_cooperation else 0)
 
     def run(self):
-        results = {"ToM": [], "NonToM": []}
+        results = {"ToM": [], "NonToM": [], "ToM_Cooperation": [], "NonToM_Cooperation": []}
 
         for step in range(self.steps):
             self.step()
 
-            # Calculate average resources for each type
             tom_agents = [a.resources for a in self.agents if a.has_tom]
             nontom_agents = [a.resources for a in self.agents if not a.has_tom]
 
@@ -83,5 +115,7 @@ class ToMSimulation:
 
             results["ToM"].append(avg_tom)
             results["NonToM"].append(avg_nontom)
+            results["ToM_Cooperation"].append(self.cooperation_log["ToM"][-1])
+            results["NonToM_Cooperation"].append(self.cooperation_log["NonToM"][-1])
 
         return results
