@@ -18,7 +18,7 @@ At each time step, agents accumulate resources:
 
 ### Simulation Dynamics
 1. Initialize  N  agents as ToM ( T = 1 ) or non-ToM ( T = 0 ).
-2. Alternate environment states ( E_{ high }  and  E_{ low }) at each time step.
+2. Alternate environment states ( $E_{ high$ }  and  $E_{ low }$) at each time step.
 3. Track resource accumulation for  T  steps.
 
 ### Data Analysis
@@ -34,7 +34,7 @@ At each time step, agents accumulate resources:
 
 ### Changes from the Minimal Model
 1. **Shared Resource Pool:**
-   - Introduced a **limited resource pool** with alternating availability ( R_{ total } = 100  in high-resource and  R_{ total } = 50  in low-resource states).
+   - Introduced a **limited resource pool** with alternating availability ($ R_{ total } = 100 $ in high-resource and $ R_{ total } = 50$  in low-resource states).
 
 2. **Adaptive ToM Behavior:**
    - ToM agents **request fewer resources in low-resource environments** (40% of the pool) and more in high-resource environments (60% of the pool), reflecting strategic adaptation.
@@ -65,7 +65,7 @@ This layer emphasizes the role of within-group dynamics in understanding how ToM
    - ToM agents now predict cooperation based on both **self-prediction** and **partner prediction**, weighted by an individual $\alpha $ parameter.
 
 2. **$\alpha$-Weighted Predictions:**
-   - $\alpha$  is unique for each ToM agent, sampled from a uniform distribution (\( [0, 1] \)).
+   - $\alpha$  is unique for each ToM agent, sampled from a uniform distribution $(\( [0, 1] \))$.
    - Cooperation probability is calculated as:
      
      $\text{Combined Probability} = \alpha \times \text{Self-Prediction} + (1 - \alpha) \times \text{Partner Prediction}.$
