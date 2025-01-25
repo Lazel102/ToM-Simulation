@@ -2,7 +2,7 @@ from model import ToMSimulation
 from visualization import plot_results, plot_relative_difference
 
 # Parameters
-model = "Simple with limited Ressources"
+model = "complex with limited Ressources and ToM without alternating environment"
 NUM_AGENTS = 50
 STEPS = 100
 

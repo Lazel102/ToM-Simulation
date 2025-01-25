@@ -6,49 +6,67 @@ class Agent:
         self.has_tom = has_tom
         self.resources = 0
 
-    def act(self, environment):
-        if self.has_tom:
-            # ToM agents adapt based on environment state
-            if environment == "high":
-                self.resources += 2  # Higher gain in favorable conditions
-            else:
-                self.resources += 1
+    def decide_cooperation(self, memory, partner_id):
+        if not self.has_tom:
+            # Non-ToM agents cooperate randomly
+            return random.choice([True, False])
         else:
-            # Non-ToM agents act randomly
-            self.resources += random.choice([1, 2])
+            # ToM agents decide based on partner's history from centralized memory
+            partner_history = memory.get(partner_id, [])
+            if partner_history:
+                # Calculate partner's cooperation rate
+                cooperation_rate = sum(partner_history) / len(partner_history)
+                return cooperation_rate > 0.5  # Cooperate if partner cooperates > 50% of the time
+            return True  # Default to cooperation if no history exists
+
 class ToMSimulation:
     def __init__(self, num_agents, steps):
         self.num_agents = num_agents
         self.steps = steps
-        self.environment = "low"  # Start in a low-resource state
         self.agents = [Agent(i, random.choice([True, False])) for i in range(num_agents)]
+        self.memory = {agent.id: [] for agent in self.agents}  # Centralized memory for cooperation history
+
+    def update_memory(self, agent_id, partner_id, action):
+        # Update the cooperation history for the pair in centralized memory
+        if partner_id not in self.memory:
+            self.memory[partner_id] = []
+        self.memory[partner_id].append(action)
 
     def step(self):
-        # Alternate environment state
-        self.environment = "high" if self.environment == "low" else "low"
+        # Separate agents into ToM and non-ToM groups
+        tom_agents = [agent for agent in self.agents if agent.has_tom]
+        nontom_agents = [agent for agent in self.agents if not agent.has_tom]
 
-        # Define total resource pool based on the environment
-        total_resources = 100 if self.environment == "high" else 50
+        # Shuffle and create pairs within each group
+        random.shuffle(tom_agents)
+        random.shuffle(nontom_agents)
 
-        # Track total resource allocation
-        total_allocation = 0
+        tom_pairs = [(tom_agents[i], tom_agents[i + 1]) for i in range(0, len(tom_agents), 2) if i + 1 < len(tom_agents)]
+        nontom_pairs = [(nontom_agents[i], nontom_agents[i + 1]) for i in range(0, len(nontom_agents), 2) if i + 1 < len(nontom_agents)]
 
-        # Distribute resources among agents
-        for agent in self.agents:
-            # Determine the resources requested by each agent
-            if agent.has_tom:
-                requested = total_resources * 0.6 if self.environment == "high" else total_resources * 0.4
-            else:
-                requested = total_resources * random.uniform(0.3, 0.7)
+        # Process cooperation decisions for each group
+        for agent1, agent2 in tom_pairs + nontom_pairs:
+            # Each agent decides whether to cooperate
+            agent1_cooperates = agent1.decide_cooperation(self.memory, agent2.id)
+            agent2_cooperates = agent2.decide_cooperation(self.memory, agent1.id)
 
-            # Allocate resources without exceeding the total pool
-            allocation = min(requested, total_resources - total_allocation)
-            agent.resources += allocation
-            total_allocation += allocation
+            # Update memory
+            self.update_memory(agent1.id, agent2.id, agent2_cooperates)
+            self.update_memory(agent2.id, agent1.id, agent1_cooperates)
 
-            # Stop distributing if the pool is exhausted
-            if total_allocation >= total_resources:
-                break
+            # Assign resources based on cooperation decisions
+            if agent1_cooperates and agent2_cooperates:
+                agent1.resources += 2
+                agent2.resources += 2
+            elif not agent1_cooperates and not agent2_cooperates:
+                agent1.resources += 1
+                agent2.resources += 1
+            elif agent1_cooperates and not agent2_cooperates:
+                agent1.resources += 0
+                agent2.resources += 4
+            elif not agent1_cooperates and agent2_cooperates:
+                agent1.resources += 4
+                agent2.resources += 0
 
     def run(self):
         results = {"ToM": [], "NonToM": []}
