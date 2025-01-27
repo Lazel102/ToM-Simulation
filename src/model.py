@@ -17,13 +17,27 @@ class Agent:
         else:
             # Retrieve partner's history
             partner_history = memory.get(partner_id, [])
-            observed_cooperation_rate = sum(partner_history) / len(partner_history) if partner_history else 0
+            observed_cooperation_rate_partner = sum(partner_history) / len(partner_history) if partner_history else 0
+            # Retrieve own history
+            own_history = memory.get(self.id, [])
+            # Retrieve partner's history
+            partner_history = memory.get(partner_id, [])
+            observed_cooperation_rate_partner = sum(partner_history) / len(partner_history) if partner_history else 0
+            # Retrieve own history
+            own_history = memory.get(self.id, [])
+            observed_cooperation_rate_self = sum(own_history) / len(partner_history) if partner_history else 0
 
             # Self-prediction: Predict the probability of self-cooperation
-            self_prediction = self.predict_cooperation(observed_cooperation_rate, resource_availability)
+            self_prediction = self.predict_cooperation(observed_cooperation_rate_self, resource_availability)
 
             # Partner prediction: Predict the probability of partner cooperation
-            partner_prediction = self.predict_cooperation(observed_cooperation_rate, resource_availability)
+            partner_prediction = self.predict_cooperation(observed_cooperation_rate_partner, resource_availability)
+
+            # Self-prediction: Predict the probability of self-cooperation
+            self_prediction = self.predict_cooperation(observed_cooperation_rate_self, resource_availability)
+
+            # Partner prediction: Predict the probability of partner cooperation
+            partner_prediction = self.predict_cooperation(observed_cooperation_rate_partner, resource_availability)
 
             # Combine probabilities using alpha
             combined_probability = self.alpha * self_prediction + (1 - self.alpha) * partner_prediction
@@ -36,16 +50,20 @@ class Agent:
     def predict_cooperation(self, observed_cooperation_rate, total_resources):
         """
         Predict the probability of cooperation under given conditions.
-        Combines environmental context and observed behavior.
+        Combines normalized environmental context and observed behavior.
         Returns a probability between 0 and 1.
         """
-        # Define baseline probability based on environmental conditions
-        baseline_probability = total_resources / (2 * config.MEAN_RESOURCES)
+        # Normalize total_resources around mean with a defined range
+        normalized_resources = max(0, min(1, (total_resources - config.MEAN_RESOURCES) / (2 * config.MEAN_RESOURCES)))
 
-        # Combine baseline with observed cooperation rate
-        predicted_probability = (baseline_probability + observed_cooperation_rate) / 2
+        # Weighted baseline probability to make observed behavior more impactful
+        resource_weight = 0.5  # Weight given to environmental context
+        behavior_weight = 1 - resource_weight  # Complementary weight for observed behavior
 
-        return predicted_probability
+        baseline_probability = normalized_resources * resource_weight
+        predicted_probability = (baseline_probability + (behavior_weight * observed_cooperation_rate))
+
+        return max(0, min(1, predicted_probability))  # Ensure probabilities remain between 0 and 1
 
 
 class ToMSimulation:
