@@ -71,7 +71,7 @@ Contributions are welcome! If you have suggestions for improvements or additiona
 This project is licensed under the MIT License.
 
 ## Acknowledgments
-This project has its root in the course Human behavior, Cultures, and Societies taught by Nicolas Baumard (nbaumard@gmail.com), Jean-Baptiste André (jeanbaptisteandre@gmail.com) &  Marius Mercier (mariusmercier1@gmail.com).
+This project has its root in the course Human behavior, Cultures, and Societies taught by [Nicolas Baumard](https://cognition.ens.fr/fr/member/613/nicolas-baumard), [Jean-Baptiste André](https://cognition.ens.fr/fr/member/1948/jean-baptiste-andre)  &  [Marius Mercier]((https://esc.dec.ens.fr/fr/membres-de-lequipe-esc-10877).
 It is inspired by the work of:
 
 - Daniel Nettle (2006) on adaptive plasticity and environmental variability.
